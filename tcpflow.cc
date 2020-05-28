@@ -46,12 +46,16 @@ void reflect(int rsd)
 	}
 }
 
+const char *pattern = "-\\|/";
+
 int client_main( const char *address_string, const char *port_string )
 {
 	int	rsd;
 	struct	sockaddr_in
 		address;
 	int	r;
+	unsigned int
+		turn = 0;
 
 	rsd = socket( PF_INET, SOCK_STREAM, 0 );
 	if( rsd < 0 ) {
@@ -84,6 +88,9 @@ int client_main( const char *address_string, const char *port_string )
 		} else if ( r == 0 ) {
 			close( rsd );
 			return 1;
+		} else {
+			fprintf(stderr, "  %c  \r", pattern[turn]);
+			turn = (turn + 1) % 4;
 		}
 	}
 }
