@@ -30,11 +30,10 @@ void reflect(int rsd)
 		if( r < 0 ) {
 			// Error
 			perror( "recv" );
-
 			close(rsd);
 			return;
 		} else if( r == 0 ) {
-			// End of file
+			// End of File
 			close(rsd);
 			return;
 		} else {
@@ -46,7 +45,12 @@ void reflect(int rsd)
 	}
 }
 
-const char *pattern = "-\\|/";
+string pattern[] = {
+	"    - - - - - -  \r",
+	"    \\ \\ \\ \\ \\ \\  \r",
+	"    | | | | | |  \r",
+	"    / / / / / /  \r"
+};
 
 int client_main( const char *address_string, const char *port_string )
 {
@@ -84,9 +88,12 @@ int client_main( const char *address_string, const char *port_string )
 		while( remaining ) {
 			r = recv( rsd, buffer, remaining, 0 );
 			if( r < 0 ) {
+				// Error
+				perror( "recv" );
 				close( rsd );
 				return 2;
 			} else if ( r == 0 ) {
+				// End of File
 				close( rsd );
 				return 1;
 			} else if (r > remaining) {
@@ -94,7 +101,7 @@ int client_main( const char *address_string, const char *port_string )
 				close( rsd );
 				return 1;
 			} else {
-				fprintf(stderr, "  %c  \r", pattern[turn]);
+				cerr << pattern[turn];
 				turn = (turn + 1) % 4;
 
 				remaining -= r;
