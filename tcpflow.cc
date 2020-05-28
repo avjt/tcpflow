@@ -160,8 +160,9 @@ int server_main( const char *port_string, const char *address_string )
 void usage( const char *progname )
 {
 	cerr << "Usage: " << endl;
-	cerr << "\t" << progname << " server <port [ <address> ]" << endl;
+	cerr << "\t" << progname << " server <port> [ <address> ]" << endl;
 	cerr << "\t" << progname << " client <address> <port>" << endl;
+	cerr << endl;
 }
 
 int main( int C, char **V )
