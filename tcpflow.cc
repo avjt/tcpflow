@@ -74,23 +74,31 @@ int client_main( const char *address_string, const char *port_string )
 	}
 
 	for( ; ; ) {
-		int r;
+		int r, remaining;
 
-		if( send( rsd, buffer, sizeof(buffer), 0 ) < 0 ) {
+		if( (remaining = send( rsd, buffer, sizeof(buffer), 0 )) < 0 ) {
 			perror( "send" );
 			return 3;
 		}
 
-		r = recv( rsd, buffer, sizeof(buffer), 0 );
-		if( r < 0 ) {
-			close( rsd );
-			return 2;
-		} else if ( r == 0 ) {
-			close( rsd );
-			return 1;
-		} else {
-			fprintf(stderr, "  %c  \r", pattern[turn]);
-			turn = (turn + 1) % 4;
+		while( remaining ) {
+			r = recv( rsd, buffer, remaining, 0 );
+			if( r < 0 ) {
+				close( rsd );
+				return 2;
+			} else if ( r == 0 ) {
+				close( rsd );
+				return 1;
+			} else if (r > remaining) {
+				// Whoa! What happened here?
+				close( rsd );
+				return 1;
+			} else {
+				fprintf(stderr, "  %c  \r", pattern[turn]);
+				turn = (turn + 1) % 4;
+
+				remaining -= r;
+			}
 		}
 	}
 }
