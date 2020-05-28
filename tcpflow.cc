@@ -21,23 +21,23 @@ using namespace std;
 
 static unsigned char buffer[BUFFERSIZE];
 
-void reflect(int rsd)
+void reflect(int sd)
 {
 	for( ; ; ) {
 		int r;
 
-		r = recv( rsd, buffer, BUFFERSIZE, 0 );
+		r = recv( sd, buffer, BUFFERSIZE, 0 );
 		if( r < 0 ) {
 			// Error
 			perror( "recv" );
-			close(rsd);
+			close(sd);
 			return;
 		} else if( r == 0 ) {
 			// End of File
-			close(rsd);
+			close(sd);
 			return;
 		} else {
-			if( send( rsd, buffer, r, 0 ) < 0 ) {
+			if( send( sd, buffer, r, 0 ) < 0 ) {
 				perror( "send" );
 				return;
 			}
@@ -54,15 +54,14 @@ string pattern[] = {
 
 int client_main( const char *address_string, const char *port_string )
 {
-	int	rsd;
+	int	sd;
 	struct	sockaddr_in
 		address;
 	int	r;
 	unsigned int
 		turn = 0;
 
-	rsd = socket( PF_INET, SOCK_STREAM, 0 );
-	if( rsd < 0 ) {
+	if( (sd = socket( PF_INET, SOCK_STREAM, 0 )) < 0 ) {
 		perror( "socket" );
 		return 1;
 	}
@@ -72,7 +71,7 @@ int client_main( const char *address_string, const char *port_string )
 	address.sin_port = htons(atoi(port_string));
 	address.sin_addr.s_addr = inet_addr(address_string);
 
-	if( connect( rsd, (struct sockaddr *)&address, sizeof(struct sockaddr_in) ) < 0 ) {
+	if( connect( sd, (struct sockaddr *)&address, sizeof(struct sockaddr_in) ) < 0 ) {
 		perror( "connect" );
 		return 1;
 	}
@@ -80,25 +79,25 @@ int client_main( const char *address_string, const char *port_string )
 	for( ; ; ) {
 		int r, remaining;
 
-		if( (remaining = send( rsd, buffer, sizeof(buffer), 0 )) < 0 ) {
+		if( (remaining = send( sd, buffer, sizeof(buffer), 0 )) < 0 ) {
 			perror( "send" );
 			return 3;
 		}
 
 		while( remaining ) {
-			r = recv( rsd, buffer, remaining, 0 );
+			r = recv( sd, buffer, remaining, 0 );
 			if( r < 0 ) {
 				// Error
 				perror( "recv" );
-				close( rsd );
+				close( sd );
 				return 2;
 			} else if( r == 0 ) {
 				// End of File
-				close( rsd );
+				close( sd );
 				return 1;
 			} else if( r > remaining ) {
 				// Whoa! What happened here?
-				close( rsd );
+				close( sd );
 				return 1;
 			} else {
 				cerr << pattern[turn];
@@ -112,13 +111,12 @@ int client_main( const char *address_string, const char *port_string )
 
 int server_main( const char *port_string, const char *address_string )
 {
-	int	rsd;
+	int	sd;
 	struct	sockaddr_in
 		address;
 	int	r;
 
-	rsd = socket( PF_INET, SOCK_STREAM, 0 );
-	if( rsd < 0 ) {
+	if( (sd = socket( PF_INET, SOCK_STREAM, 0 )) < 0 ) {
 		perror( "socket" );
 		return 1;
 	}
@@ -128,12 +126,12 @@ int server_main( const char *port_string, const char *address_string )
 	address.sin_port = htons(atoi(port_string));
 	address.sin_addr.s_addr = address_string ? inet_addr(address_string) : INADDR_ANY;
 
-	if( bind( rsd, (struct sockaddr *)&address, sizeof(struct sockaddr_in) ) < 0 ) {
+	if( bind( sd, (struct sockaddr *)&address, sizeof(struct sockaddr_in) ) < 0 ) {
 		perror( "bind" );
 		return 1;
 	}
 
-	if( listen( rsd, 5 ) < 0 ) {
+	if( listen( sd, 5 ) < 0 ) {
 		perror( "listen" );
 		return 1;
 	}
@@ -144,7 +142,7 @@ int server_main( const char *port_string, const char *address_string )
 		int	fromlen;
 
 		fromlen = sizeof(struct sockaddr_in);
-		if( (r = accept( rsd, (struct sockaddr *)&from, (socklen_t *) &fromlen )) < 0 ) {
+		if( (r = accept( sd, (struct sockaddr *)&from, (socklen_t *) &fromlen )) < 0 ) {
 			perror( "accept" );
 			return 1;
 		} else {
