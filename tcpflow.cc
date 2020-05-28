@@ -92,11 +92,11 @@ int client_main( const char *address_string, const char *port_string )
 				perror( "recv" );
 				close( rsd );
 				return 2;
-			} else if ( r == 0 ) {
+			} else if( r == 0 ) {
 				// End of File
 				close( rsd );
 				return 1;
-			} else if (r > remaining) {
+			} else if( r > remaining ) {
 				// Whoa! What happened here?
 				close( rsd );
 				return 1;
@@ -144,8 +144,7 @@ int server_main( const char *port_string, const char *address_string )
 		int	fromlen;
 
 		fromlen = sizeof(struct sockaddr_in);
-		r = accept( rsd, (struct sockaddr *)&from, (socklen_t *) &fromlen );
-		if( r < 0 ) {
+		if( (r = accept( rsd, (struct sockaddr *)&from, (socklen_t *) &fromlen )) < 0 ) {
 			perror( "accept" );
 			return 1;
 		} else {
@@ -170,14 +169,14 @@ int main( int C, char **V )
 	if( C < 2 ) {
 		usage( V[0] );
 		return 1;
-	} else if ( !strcmp(V[1], "server") ) {
+	} else if( !strcmp(V[1], "server") ) {
 		if( C < 3 ) {
 			usage( V[0] );
 			return 1;
 		} else {
 			return server_main( V[2], (C > 3) ? V[3] : 0 );
 		}
-	} else if ( !strcmp(V[1], "client") ) {
+	} else if( !strcmp(V[1], "client") ) {
 		if( C < 4 ) {
 			usage( V[0] );
 			return 1;
